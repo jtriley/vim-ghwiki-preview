@@ -1,0 +1,3 @@
+[submodule "plugin/py-github"]
+	path = plugin/py-github
+	url = git@github.com:jtriley/py-github.git
