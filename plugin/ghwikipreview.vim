@@ -72,7 +72,7 @@ def ghwiki_preview_buffer():
         return
     params = dict(name=bufname, format=bufformat, body='\n'.join(buf))
     params_quoted = _build_and_quote_params(params)
-    result = urllib2.urlopen(url, data=params_quoted).read()
+    result = urllib2.urlopen(URL, data=params_quoted).read()
     with open('/tmp/delete.html', 'w') as htmlfile:
             htmlfile.write(result)
             webbrowser.open_new_tab(htmlfile.name)
