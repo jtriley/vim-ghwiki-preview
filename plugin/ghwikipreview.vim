@@ -15,7 +15,7 @@ scriptdir = os.path.join(os.path.dirname(vim.eval('expand("<sfile>")')), 'py-git
 if scriptdir not in sys.path:
     sys.path.insert(0, scriptdir)
 
-from github imoprt github
+from github import github
 
 REPO_ERROR = ''
 
@@ -38,8 +38,7 @@ def get_preview_url():
     except urllib2.HTTPError:
         REPO_ERROR = "repo %s does not exist" % wiki_repo
         return
-    urltmpl = 'https://github.com/%s/%s/wiki/_preview' % (user, repo)
-    return urltmpl % wiki_repo
+    return 'https://github.com/%s/%s/wiki/_preview' % (user, repo)
 
 URL = get_preview_url()
 FORMATS_AND_EXTENSIONS = {'.asciidoc': 'asciidoc',
