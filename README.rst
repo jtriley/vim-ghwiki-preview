@@ -91,7 +91,7 @@ Changing the Default Web Browser
 
 vim-ghwiki-preview uses the `webbrowser`_ module in the standard Python library
 to launch a web-browser and display the github wiki preview. The `webbrowser`_
-module will try to autmoatically launch the best browser for your platform. If
+module will try to automatically launch the best browser for your platform. If
 you'd like to use a different browser other than the default chosen by
 `webbrowser`_, set the following in your ~/.vimrc::
 
