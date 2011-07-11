@@ -19,4 +19,10 @@ if pygithubsrc not in sys.path:
     sys.path.insert(0, pygithubsrc)
 
 from ghwiki import *
+
+has_keybinding = int(vim.eval("exists('g:ghwiki_preview_keybinding')"))
+keybinding = '<leader><leader>g'
+if has_keybinding:
+    keybinding = vim.eval("g:ghwiki_preview_keybinding")
+vim.command('map %s :python ghwiki_preview_buffer()<CR>' % keybinding)
 endpython

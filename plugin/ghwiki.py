@@ -114,6 +114,6 @@ def show_preview(html):
     server = httpserv.HTTPServer(('127.0.0.1', 0), RequestHandler)
     # calls URL to retrieve html from the temporary http server
     previewurl = 'http://127.0.0.1:%s' % server.server_port
-    print "Local preview url: %s " % previewurl
+    print "Local one-time preview url: %s " % previewurl
     open_browser(previewurl)
     server.handle_request()
