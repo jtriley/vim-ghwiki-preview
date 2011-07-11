@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 import os
+import sys
 import vim
 import urllib2
-import tempfile
 import webbrowser
+import subprocess
+import BaseHTTPServer as httpserv
 
 from github import github
 
@@ -69,12 +71,49 @@ def ghwiki_preview_buffer():
         return
     params = dict(name=bufname, format=bufformat, body='\n'.join(buf))
     params_quoted = _build_and_quote_params(params)
-    result = urllib2.urlopen(URL, data=params_quoted).read()
-    tmpdir = tempfile.gettempdir()
-    slashtemp = os.path.sep + 'tmp'
-    if os.path.isdir(slashtemp):
-        tmpdir = slashtemp
-    outhtml = os.path.join(tmpdir, 'ghwikipreview.html')
-    with open(outhtml, 'w') as htmlfile:
-        htmlfile.write(result)
-        webbrowser.open_new_tab(htmlfile.name)
+    html = urllib2.urlopen(URL, data=params_quoted).read()
+    show_preview(html)
+
+
+class BackgroundBrowser(webbrowser.GenericBrowser):
+    """Class for all browsers which are to be started in the background."""
+    def open(self, url, new=0, autoraise=1):
+        cmdline = [self.name] + [arg.replace("%s", url)
+                                 for arg in self.args]
+        try:
+            if sys.platform[:3] == 'win':
+                p = subprocess.Popen(cmdline, stdout=subprocess.PIPE)
+            else:
+                setsid = getattr(os, 'setsid', None)
+                if not setsid:
+                    setsid = getattr(os, 'setpgrp', None)
+                p = subprocess.Popen(cmdline, close_fds=True,
+                                     preexec_fn=setsid, stdout=subprocess.PIPE)
+            return (p.poll() is None)
+        except OSError:
+            return False
+
+
+def open_browser(url):
+    # get 'default' browser from webbrowser module
+    browser_cmd = webbrowser.get().basename
+    browser_defined = int(vim.eval("exists('g:ghwiki_preview_browser')"))
+    if browser_defined:
+        browser_cmd = vim.eval("g:ghwiki_preview_browser")
+    browser = BackgroundBrowser(browser_cmd)
+    browser.open(url)
+
+
+def show_preview(html):
+    class RequestHandler(httpserv.BaseHTTPRequestHandler):
+        def do_GET(self):
+            bufferSize = 1024 * 1024
+            for i in xrange(0, len(html), bufferSize):
+                self.wfile.write(html[i:i + bufferSize])
+    # create a temporary http server to handle one request
+    server = httpserv.HTTPServer(('127.0.0.1', 0), RequestHandler)
+    # calls URL to retrieve html from the temporary http server
+    previewurl = 'http://127.0.0.1:%s' % server.server_port
+    print "Local preview url: %s " % previewurl
+    open_browser(previewurl)
+    server.handle_request()
