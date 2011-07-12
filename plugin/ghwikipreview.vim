@@ -3,6 +3,11 @@ if !has('python')
     finish
 endif
 
+if exists('g:ghwiki_preview_loaded')
+    finish
+endif
+let g:ghwiki_preview_loaded = 1
+
 python << endpython
 import os
 import sys
