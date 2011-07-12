@@ -2,6 +2,7 @@
 import os
 import sys
 import vim
+import shlex
 import urllib2
 import webbrowser
 import subprocess
@@ -94,13 +95,35 @@ class BackgroundBrowser(webbrowser.GenericBrowser):
             return False
 
 
+def _is_exe(fpath):
+    return os.path.exists(fpath) and os.access(fpath, os.X_OK)
+
+
+def _which(program):
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if _is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            if _is_exe(exe_file):
+                return exe_file
+
+
 def open_browser(url):
     # get 'default' browser from webbrowser module
-    browser_cmd = webbrowser.get().basename
+    browser_cmd = webbrowser.get().name
     browser_defined = int(vim.eval("exists('g:ghwiki_preview_browser')"))
     if browser_defined:
         browser_cmd = vim.eval("g:ghwiki_preview_browser")
-    browser = BackgroundBrowser(browser_cmd)
+    cmd = shlex.split(browser_cmd)
+    arg0 = cmd[0]
+    if not _which(arg0):
+        raise Exception("browser %s does not exist" % arg0)
+    if "%s" not in browser_cmd:
+        cmd.append("%s")
+    browser = BackgroundBrowser(cmd)
     browser.open(url)
 
 
@@ -115,5 +138,8 @@ def show_preview(html):
     # calls URL to retrieve html from the temporary http server
     previewurl = 'http://127.0.0.1:%s' % server.server_port
     print "Local one-time preview url: %s " % previewurl
-    open_browser(previewurl)
-    server.handle_request()
+    try:
+        open_browser(previewurl)
+        server.handle_request()
+    except Exception, e:
+        print e

@@ -97,5 +97,12 @@ you'd like to use a different browser other than the default chosen by
 
         let ghwiki_preview_browser = "chromium"
 
+You can also specify additional browser arguments and options::
+
+        let ghwiki_preview_browser = 'open -a "Google Chrome" %s'
+
+In the above example *%s* will be replaced by the plugin with the url to the
+local preview page.
+
 .. _pathogen: https://github.com/tpope/vim-pathogen
 .. _webbrowser: http://docs.python.org/library/webbrowser.html
