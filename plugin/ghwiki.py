@@ -92,18 +92,19 @@ class GHWikiPreview(object):
             params.append('wiki[%s]=%s' % (key, paramdict.get(key)))
         return urllib2.quote('&'.join(params), safe='=&')
 
+    def _print_err(self, msg):
+        print '!!! ERROR (ghwiki-preview): %s' % msg
+
     def ghwiki_preview_buffer(self):
-        if not self.url:
-            errmsg = self._err or 'error occured while fetching preview'
-            print "!!! ERROR (ghwiki-preview): %s" % errmsg
-            return
         buf = vim.current.buffer
         bufname = os.path.basename(buf.name)
         bufext = os.path.splitext(buf.name)[-1]
         bufformat = FORMATS_AND_EXTENSIONS.get(bufext)
         if bufformat is None:
-            print "ghwiki-preview: unsupported file extension '%s'" % bufext
-            return
+            return self._print_err("unsupported file extension '%s'" % bufext)
+        if not self.url:
+            msg = self._err or 'error occured while fetching preview'
+            return self._print_err(msg)
         params = dict(name=bufname, format=bufformat, body='\n'.join(buf))
         params_quoted = self._build_and_quote_params(params)
         html = urllib2.urlopen(self.url, data=params_quoted).read()
